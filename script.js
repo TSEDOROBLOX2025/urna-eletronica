@@ -36,35 +36,19 @@ const candidatos = {
     }
 };
 
-// Função para carregar votos de localStorage
-function carregarVotos() {
-    let votos = JSON.parse(localStorage.getItem("votos"));
-    if (!votos) votos = {presidente: {}, governador: {}, senador: {}, deputadoF: {}, deputadoE: {}};
-    return votos;
-}
+// Voto de cada cargo
+let votos = {
+    presidente: "",
+    governador: "",
+    senador: "",
+    deputadoF: "",
+    deputadoE: ""
+};
 
-// Função para atualizar votos
-function salvarVoto(voto, cargo) {
-    let votos = carregarVotos();
-    if (!votos[cargo][voto]) votos[cargo][voto] = 0;
-    votos[cargo][voto]++;
-    localStorage.setItem("votos", JSON.stringify(votos));
-}
-
-// Função para mostrar resultados
-function mostrarResultados() {
-    let votos = carregarVotos();
-    let resultados = "<h3>Resultados de Votação:</h3>";
-
-    // Exibindo votos por cargo
-    for (let cargo in votos) {
-        resultados += `<h4>${cargo.charAt(0).toUpperCase() + cargo.slice(1)}</h4>`;
-        for (let candidato in votos[cargo]) {
-            resultados += `${candidatos[cargo][candidato] || candidato}: ${votos[cargo][candidato]} votos<br>`;
-        }
-    }
-
-    document.getElementById("resultadoVoto").innerHTML = resultados;
+// Função para votar
+function votar(cargo, numero) {
+    votos[cargo] = numero;  // Armazenar o número do candidato votado
+    document.getElementById("resultadoVoto").textContent = `Você votou no candidato: ${candidatos[cargo][numero]}`;
 }
 
 // Função para confirmar o voto
@@ -72,56 +56,20 @@ function confirmarVoto() {
     let resultado = "Você votou em:\n";
     let erro = false;
 
-    // Coletando votos dos candidatos
-    let presidente = document.getElementById("presidente").value;
-    let governador = document.getElementById("governador").value;
-    let senador = document.getElementById("senador").value;
-    let deputadoF = document.getElementById("deputadoF").value;
-    let deputadoE = document.getElementById("deputadoE").value;
-
-    // Verificando se os votos são válidos
-    if (candidatos.presidente[presidente]) {
-        resultado += "Presidente: " + candidatos.presidente[presidente] + "\n";
-        salvarVoto(presidente, "presidente");
-    } else {
-        erro = true;
+    // Exibindo votos
+    for (let cargo in votos) {
+        let voto = votos[cargo];
+        if (voto) {
+            resultado += `${cargo.charAt(0).toUpperCase() + cargo.slice(1)}: ${candidatos[cargo][voto]} \n`;
+        } else {
+            erro = true;
+        }
     }
 
-    if (candidatos.governador[governador]) {
-        resultado += "Governador: " + candidatos.governador[governador] + "\n";
-        salvarVoto(governador, "governador");
-    } else {
-        erro = true;
-    }
-
-    if (candidatos.senador[senador]) {
-        resultado += "Senador: " + candidatos.senador[senador] + "\n";
-        salvarVoto(senador, "senador");
-    } else {
-        erro = true;
-    }
-
-    if (candidatos.deputadoF[deputadoF]) {
-        resultado += "Deputado Federal: " + candidatos.deputadoF[deputadoF] + "\n";
-        salvarVoto(deputadoF, "deputadoF");
-    } else {
-        erro = true;
-    }
-
-    if (candidatos.deputadoE[deputadoE]) {
-        resultado += "Deputado Estadual: " + candidatos.deputadoE[deputadoE] + "\n";
-        salvarVoto(deputadoE, "deputadoE");
-    } else {
-        erro = true;
-    }
-
-    // Exibindo o resultado
+    // Mostrar resultado final
     if (erro) {
-        document.getElementById("resultadoVoto").textContent = "Algum número de candidato é inválido!";
+        document.getElementById("resultadoVoto").textContent = "Você não completou sua votação. Por favor, vote em todos os cargos.";
     } else {
         document.getElementById("resultadoVoto").textContent = resultado;
     }
 }
-
-// Exibindo os resultados ao carregar a página
-mostrarResultados();
