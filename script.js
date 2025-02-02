@@ -1,75 +1,52 @@
-// Lista de candidatos por cargo
-const candidatos = {
-    presidente: {
-        "22": "Álvaro - PL",
-        "44": "Pedrinho - UB",
-        "40": "Issac R. - PSB",
-        "10": "Artur - Republicanos",
-        "77": "Biel - Solidariedade"
-    },
-    governador: {
-        "22": "Lucas M. - PL",
-        "55": "Henrique O. - PSD",
-        "44": "Polar G. - UB"
-    },
-    senador: {
-        "222": "Valmir F. - PL",
-        "225": "Aquiles G. - PL",
-        "444": "Wanderley S. - UB",
-        "301": "Karina M. - PN",
-        "442": "Ian C. - UB",
-        "515": "Chico N. - PATRI"
-    },
-    deputadoF: {
-        "15.22": "Pedro E. - MDB",
-        "22.00": "Gabriel E. - PL",
-        "55.00": "Gustavo - PSD",
-        "22.22": "Maurílio T. - PL",
-        "28.00": "Pablo M. - PRTB",
-        "43.43": "Guilherme - PV"
-    },
-    deputadoE: {
-        "22.000": "Ryan B. - PL",
-        "22.123": "Pedro L. - PL",
-        "80.000": "Kenety P. - UP",
-        "12.000": "Ciro G. - PDT"
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "SUA_API_KEY", // Substitua com sua chave do Firebase
+    authDomain: "SEU_AUTH_DOMAIN", // Substitua com seu domínio
+    databaseURL: "SEU_DATABASE_URL", // Substitua com sua URL
+    projectId: "SEU_PROJECT_ID", // Substitua com seu ID do projeto
+    storageBucket: "SEU_STORAGE_BUCKET", // Substitua com seu bucket
+    messagingSenderId: "SEU_MESSAGING_SENDER_ID", // Substitua com o ID
+    appId: "SEU_APP_ID" // Substitua com seu App ID
+};
+
+// Inicializando o Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(app);
+
+// Função para registrar o voto
+function votar(numero) {
+    const cargo = identificarCargo(numero); // Identifica o cargo com base no número
+
+    if (cargo) {
+        // Envia o voto para o Firebase
+        db.collection("votos").add({
+            cargo: cargo,
+            numero: numero,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            mostrarMensagem("Voto registrado com sucesso!");
+        })
+        .catch((error) => {
+            mostrarMensagem("Erro ao registrar o voto. Tente novamente.");
+            console.error(error);
+        });
+    } else {
+        mostrarMensagem("Número inválido! Digite um número de candidato válido.");
     }
-};
-
-// Voto de cada cargo
-let votos = {
-    presidente: "",
-    governador: "",
-    senador: "",
-    deputadoF: "",
-    deputadoE: ""
-};
-
-// Função para votar
-function votar(cargo, numero) {
-    votos[cargo] = numero;  // Armazenar o número do candidato votado
-    document.getElementById("resultadoVoto").textContent = `Você votou no candidato: ${candidatos[cargo][numero]}`;
 }
 
-// Função para confirmar o voto
-function confirmarVoto() {
-    let resultado = "Você votou em:\n";
-    let erro = false;
+// Função para identificar o cargo com base no número do candidato
+function identificarCargo(numero) {
+    // Exemplo simples para identificar os cargos
+    if (numero == 22) return "Presidente"; 
+    if (numero == 44) return "Governador";
+    if (numero == 10) return "Deputado"; 
+    return null;  // Se não for um número válido
+}
 
-    // Exibindo votos
-    for (let cargo in votos) {
-        let voto = votos[cargo];
-        if (voto) {
-            resultado += `${cargo.charAt(0).toUpperCase() + cargo.slice(1)}: ${candidatos[cargo][voto]} \n`;
-        } else {
-            erro = true;
-        }
-    }
-
-    // Mostrar resultado final
-    if (erro) {
-        document.getElementById("resultadoVoto").textContent = "Você não completou sua votação. Por favor, vote em todos os cargos.";
-    } else {
-        document.getElementById("resultadoVoto").textContent = resultado;
-    }
+// Função para mostrar mensagens
+function mostrarMensagem(mensagem) {
+    const messageElement = document.getElementById("message");
+    messageElement.innerHTML = mensagem;
 }
