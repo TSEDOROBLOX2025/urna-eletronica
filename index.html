@@ -9,10 +9,29 @@
 <body>
     <div class="urna">
         <h2>Urna Eletrônica</h2>
-        <input type="text" id="numero" placeholder="Digite o número" maxlength="6">
-        <button onclick="buscarCandidato()">Confirmar</button>
+        <div>
+            <h3>Presidente</h3>
+            <input type="text" id="presidente" placeholder="Digite o número do Presidente" maxlength="5">
+        </div>
+        <div>
+            <h3>Governador</h3>
+            <input type="text" id="governador" placeholder="Digite o número do Governador" maxlength="5">
+        </div>
+        <div>
+            <h3>Senador</h3>
+            <input type="text" id="senador" placeholder="Digite o número do Senador" maxlength="5">
+        </div>
+        <div>
+            <h3>Deputado Federal</h3>
+            <input type="text" id="deputadoF" placeholder="Digite o número do Deputado Federal" maxlength="5">
+        </div>
+        <div>
+            <h3>Deputado Estadual</h3>
+            <input type="text" id="deputadoE" placeholder="Digite o número do Deputado Estadual" maxlength="5">
+        </div>
+        <button onclick="confirmarVoto()">Confirmar Voto</button>
         <div class="resultado">
-            <p id="nomeCandidato"></p>
+            <p id="resultadoVoto"></p>
         </div>
     </div>
     <script src="script.js"></script>
