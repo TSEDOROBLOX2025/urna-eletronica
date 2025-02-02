@@ -1,69 +1,46 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urna Virtual</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Urna Eletrônica - Brookasil</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link para o CSS -->
 </head>
 <body>
-    <div class="urna">
-        <h2>Urna Eletrônica</h2>
-        
-        <!-- Seção de Votação -->
-        <div class="selecao">
-            <h3>Presidente</h3>
-            <div class="teclado" id="presidente">
-                <button onclick="votar('presidente', '22')">22</button>
-                <button onclick="votar('presidente', '44')">44</button>
-                <button onclick="votar('presidente', '40')">40</button>
-                <button onclick="votar('presidente', '10')">10</button>
-                <button onclick="votar('presidente', '77')">77</button>
+
+    <header>
+        <h1>Votação - Urna Eletrônica</h1>
+    </header>
+    
+    <main>
+        <section>
+            <h2>Escolha o número do candidato e vote!</h2>
+
+            <!-- Botões para os números dos candidatos -->
+            <div class="botao-container">
+                <button class="numero-btn" onclick="votar(1)">1</button>
+                <button class="numero-btn" onclick="votar(2)">2</button>
+                <button class="numero-btn" onclick="votar(3)">3</button>
+                <button class="numero-btn" onclick="votar(4)">4</button>
+                <button class="numero-btn" onclick="votar(5)">5</button>
+                <button class="numero-btn" onclick="votar(6)">6</button>
+                <button class="numero-btn" onclick="votar(7)">7</button>
+                <button class="numero-btn" onclick="votar(8)">8</button>
+                <button class="numero-btn" onclick="votar(9)">9</button>
+                <button class="numero-btn" onclick="votar(0)">0</button> <!-- Botão para o 0 -->
             </div>
+        </section>
 
-            <h3>Governador</h3>
-            <div class="teclado" id="governador">
-                <button onclick="votar('governador', '22')">22</button>
-                <button onclick="votar('governador', '55')">55</button>
-                <button onclick="votar('governador', '44')">44</button>
-            </div>
+        <div id="message"></div> <!-- Mensagem após o voto -->
 
-            <h3>Senador</h3>
-            <div class="teclado" id="senador">
-                <button onclick="votar('senador', '222')">222</button>
-                <button onclick="votar('senador', '225')">225</button>
-                <button onclick="votar('senador', '444')">444</button>
-                <button onclick="votar('senador', '301')">301</button>
-                <button onclick="votar('senador', '442')">442</button>
-                <button onclick="votar('senador', '515')">515</button>
-            </div>
+    </main>
 
-            <h3>Deputado Federal</h3>
-            <div class="teclado" id="deputadoF">
-                <button onclick="votar('deputadoF', '15.22')">15.22</button>
-                <button onclick="votar('deputadoF', '22.00')">22.00</button>
-                <button onclick="votar('deputadoF', '55.00')">55.00</button>
-                <button onclick="votar('deputadoF', '22.22')">22.22</button>
-                <button onclick="votar('deputadoF', '28.00')">28.00</button>
-                <button onclick="votar('deputadoF', '43.43')">43.43</button>
-            </div>
+    <footer>
+        <p>&copy; 2025 - Brookasil Eleições</p>
+    </footer>
 
-            <h3>Deputado Estadual</h3>
-            <div class="teclado" id="deputadoE">
-                <button onclick="votar('deputadoE', '22.000')">22.000</button>
-                <button onclick="votar('deputadoE', '22.123')">22.123</button>
-                <button onclick="votar('deputadoE', '80.000')">80.000</button>
-                <button onclick="votar('deputadoE', '12.000')">12.000</button>
-            </div>
-        </div>
-
-        <button onclick="confirmarVoto()">Confirmar Voto</button>
-
-        <!-- Resultado do Voto -->
-        <div class="resultado">
-            <p id="resultadoVoto">Seu voto será exibido aqui.</p>
-        </div>
-    </div>
-    <script src="script.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
+    <script src="script.js"></script> <!-- Link para o JS -->
 </body>
 </html>
