@@ -1,50 +1,68 @@
+/* Resetando estilo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Corpo e layout */
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
     background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
 }
 
-.urna {
-    background: white;
+header {
+    background-color: #007BFF;
+    color: white;
     padding: 20px;
-    margin: 50px auto;
-    width: 350px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px gray;
+    text-align: center;
 }
 
-h3 {
-    margin-top: 20px;
+main {
+    padding: 20px;
+    text-align: center;
 }
 
-.teclado {
+.botao-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr); /* 5 botões por linha */
     gap: 10px;
-    margin-bottom: 20px;
+    justify-items: center;
+    margin: 20px 0;
 }
 
-button {
+.numero-btn {
     padding: 15px;
-    font-size: 18px;
-    background-color: #4CAF50;
+    width: 60px;
+    height: 60px;
+    background-color: #007BFF;
     color: white;
     border: none;
+    border-radius: 10px;
+    font-size: 20px;
     cursor: pointer;
-    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
-button:hover {
-    background-color: #45a049;
+.numero-btn:hover {
+    background-color: #0056b3;
 }
 
-button:active {
-    background-color: #397d3a;
+footer {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
 }
 
-.resultado {
+#message {
     margin-top: 20px;
     font-size: 18px;
-    font-weight: bold;
     color: green;
 }
