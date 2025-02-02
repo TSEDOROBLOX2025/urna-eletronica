@@ -13,26 +13,32 @@
     </header>
     
     <main>
-        <section>
-            <h2>Escolha o número do candidato e vote!</h2>
+        <section id="cargo">
+            <h2>Escolha o número do candidato</h2>
 
             <!-- Botões para os números dos candidatos -->
             <div class="botao-container">
-                <button class="numero-btn" onclick="votar(1)">1</button>
-                <button class="numero-btn" onclick="votar(2)">2</button>
-                <button class="numero-btn" onclick="votar(3)">3</button>
-                <button class="numero-btn" onclick="votar(4)">4</button>
-                <button class="numero-btn" onclick="votar(5)">5</button>
-                <button class="numero-btn" onclick="votar(6)">6</button>
-                <button class="numero-btn" onclick="votar(7)">7</button>
-                <button class="numero-btn" onclick="votar(8)">8</button>
-                <button class="numero-btn" onclick="votar(9)">9</button>
-                <button class="numero-btn" onclick="votar(0)">0</button> <!-- Botão para o 0 -->
+                <button class="numero-btn" onclick="escolherNumero(1)">1</button>
+                <button class="numero-btn" onclick="escolherNumero(2)">2</button>
+                <button class="numero-btn" onclick="escolherNumero(3)">3</button>
+                <button class="numero-btn" onclick="escolherNumero(4)">4</button>
+                <button class="numero-btn" onclick="escolherNumero(5)">5</button>
+                <button class="numero-btn" onclick="escolherNumero(6)">6</button>
+                <button class="numero-btn" onclick="escolherNumero(7)">7</button>
+                <button class="numero-btn" onclick="escolherNumero(8)">8</button>
+                <button class="numero-btn" onclick="escolherNumero(9)">9</button>
+                <button class="numero-btn" onclick="escolherNumero(0)">0</button>
             </div>
         </section>
 
-        <div id="message"></div> <!-- Mensagem após o voto -->
+        <!-- Tela para confirmar voto após escolher um número -->
+        <section id="confirmar" style="display: none;">
+            <h2 id="cargoNome"></h2>
+            <p>Você escolheu o número <span id="numeroEscolhido"></span></p>
+            <button onclick="confirmarVoto()">Confirmar Voto</button>
+        </section>
 
+        <div id="message"></div> <!-- Mensagem após o voto -->
     </main>
 
     <footer>
