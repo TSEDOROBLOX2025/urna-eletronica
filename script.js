@@ -13,40 +13,70 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(app);
 
-// Função para registrar o voto
-function votar(numero) {
-    const cargo = identificarCargo(numero); // Identifica o cargo com base no número
+let numeroSelecionado = null;
+let cargoSelecionado = null;
 
-    if (cargo) {
-        // Envia o voto para o Firebase
-        db.collection("votos").add({
-            cargo: cargo,
-            numero: numero,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        })
-        .then(() => {
-            mostrarMensagem("Voto registrado com sucesso!");
-        })
-        .catch((error) => {
-            mostrarMensagem("Erro ao registrar o voto. Tente novamente.");
-            console.error(error);
-        });
+// Função para escolher o número
+function escolherNumero(numero) {
+    numeroSelecionado = numero;
+
+    // Identificando o cargo com base no número escolhido
+    if (numero == 22) {
+        cargoSelecionado = "Presidente";
+    } else if (numero == 44) {
+        cargoSelecionado = "Governador";
+    } else if (numero == 10) {
+        cargoSelecionado = "Deputado";
     } else {
-        mostrarMensagem("Número inválido! Digite um número de candidato válido.");
+        cargoSelecionado = "Candidato Não Identificado";
     }
+
+    // Exibindo a tela para confirmar o voto
+    mostrarTelaConfirmacao();
 }
 
-// Função para identificar o cargo com base no número do candidato
-function identificarCargo(numero) {
-    // Exemplo simples para identificar os cargos
-    if (numero == 22) return "Presidente"; 
-    if (numero == 44) return "Governador";
-    if (numero == 10) return "Deputado"; 
-    return null;  // Se não for um número válido
+// Função para mostrar a tela de confirmação de voto
+function mostrarTelaConfirmacao() {
+    // Escondendo a tela de escolha do número
+    document.getElementById('cargo').style.display = 'none';
+
+    // Mostrando a tela de confirmação
+    document.getElementById('confirmar').style.display = 'block';
+    document.getElementById('cargoNome').innerText = `Cargo: ${cargoSelecionado}`;
+    document.getElementById('numeroEscolhido').innerText = numeroSelecionado;
+}
+
+// Função para confirmar o voto
+function confirmarVoto() {
+    // Registrando o voto no Firebase
+    db.collection("votos").add({
+        cargo: cargoSelecionado,
+        numero: numeroSelecionado,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        mostrarMensagem("Voto registrado com sucesso!");
+        resetarTela();
+    })
+    .catch((error) => {
+        mostrarMensagem("Erro ao registrar o voto. Tente novamente.");
+        console.error(error);
+    });
 }
 
 // Função para mostrar mensagens
 function mostrarMensagem(mensagem) {
     const messageElement = document.getElementById("message");
     messageElement.innerHTML = mensagem;
+}
+
+// Função para resetar a tela após confirmar o voto
+function resetarTela() {
+    // Resetando as variáveis
+    numeroSelecionado = null;
+    cargoSelecionado = null;
+
+    // Exibindo novamente a tela de escolha do número
+    document.getElementById('cargo').style.display = 'block';
+    document.getElementById('confirmar').style.display = 'none';
 }
