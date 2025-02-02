@@ -66,3 +66,13 @@ footer {
     font-size: 18px;
     color: green;
 }
+
+#confirmar {
+    display: none;
+    margin-top: 20px;
+}
+
+#cargoNome {
+    font-size: 24px;
+    font-weight: bold;
+}
