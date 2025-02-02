@@ -9,29 +9,59 @@
 <body>
     <div class="urna">
         <h2>Urna Eletrônica</h2>
-        <div>
+        
+        <!-- Seção de Votação -->
+        <div class="selecao">
             <h3>Presidente</h3>
-            <input type="text" id="presidente" placeholder="Digite o número do Presidente" maxlength="5">
-        </div>
-        <div>
+            <div class="teclado" id="presidente">
+                <button onclick="votar('presidente', '22')">22</button>
+                <button onclick="votar('presidente', '44')">44</button>
+                <button onclick="votar('presidente', '40')">40</button>
+                <button onclick="votar('presidente', '10')">10</button>
+                <button onclick="votar('presidente', '77')">77</button>
+            </div>
+
             <h3>Governador</h3>
-            <input type="text" id="governador" placeholder="Digite o número do Governador" maxlength="5">
-        </div>
-        <div>
+            <div class="teclado" id="governador">
+                <button onclick="votar('governador', '22')">22</button>
+                <button onclick="votar('governador', '55')">55</button>
+                <button onclick="votar('governador', '44')">44</button>
+            </div>
+
             <h3>Senador</h3>
-            <input type="text" id="senador" placeholder="Digite o número do Senador" maxlength="5">
-        </div>
-        <div>
+            <div class="teclado" id="senador">
+                <button onclick="votar('senador', '222')">222</button>
+                <button onclick="votar('senador', '225')">225</button>
+                <button onclick="votar('senador', '444')">444</button>
+                <button onclick="votar('senador', '301')">301</button>
+                <button onclick="votar('senador', '442')">442</button>
+                <button onclick="votar('senador', '515')">515</button>
+            </div>
+
             <h3>Deputado Federal</h3>
-            <input type="text" id="deputadoF" placeholder="Digite o número do Deputado Federal" maxlength="5">
-        </div>
-        <div>
+            <div class="teclado" id="deputadoF">
+                <button onclick="votar('deputadoF', '15.22')">15.22</button>
+                <button onclick="votar('deputadoF', '22.00')">22.00</button>
+                <button onclick="votar('deputadoF', '55.00')">55.00</button>
+                <button onclick="votar('deputadoF', '22.22')">22.22</button>
+                <button onclick="votar('deputadoF', '28.00')">28.00</button>
+                <button onclick="votar('deputadoF', '43.43')">43.43</button>
+            </div>
+
             <h3>Deputado Estadual</h3>
-            <input type="text" id="deputadoE" placeholder="Digite o número do Deputado Estadual" maxlength="5">
+            <div class="teclado" id="deputadoE">
+                <button onclick="votar('deputadoE', '22.000')">22.000</button>
+                <button onclick="votar('deputadoE', '22.123')">22.123</button>
+                <button onclick="votar('deputadoE', '80.000')">80.000</button>
+                <button onclick="votar('deputadoE', '12.000')">12.000</button>
+            </div>
         </div>
+
         <button onclick="confirmarVoto()">Confirmar Voto</button>
+
+        <!-- Resultado do Voto -->
         <div class="resultado">
-            <p id="resultadoVoto"></p>
+            <p id="resultadoVoto">Seu voto será exibido aqui.</p>
         </div>
     </div>
     <script src="script.js"></script>
