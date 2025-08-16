@@ -281,26 +281,12 @@
 
     <script>
         // Database simulation with localStorage
-        let database = JSON.parse(localStorage.getItem("database")) || {
+        let database = {
             cargos: ['PREFEITO'],
             candidates: [],
             votes: [],
-            votedDevices: []
+            votedDevices: new Set()
         };
-
-        // Add default candidates for second round if none exist
-        if (database.candidates.length === 0) {
-            database.candidates = [
-                { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
-                { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
-            ];
-            saveDatabase();
-        }
-
-        // Convert votedDevices array back to Set if loading from localStorage
-        if (Array.isArray(database.votedDevices)) {
-            database.votedDevices = new Set(database.votedDevices);
-        }
 
         // Save database to localStorage
         function saveDatabase() {
@@ -335,9 +321,35 @@
 
         // Initialize the system
         function init() {
+            // Load fresh data from localStorage on every init
+            loadDatabase();
             checkIfVoted();
             updateDisplay();
             updateAdminStats();
+        }
+
+        // Load database from localStorage
+        function loadDatabase() {
+            const stored = localStorage.getItem("database");
+            if (stored) {
+                database = JSON.parse(stored);
+                // Convert votedDevices array back to Set if loading from localStorage
+                if (Array.isArray(database.votedDevices)) {
+                    database.votedDevices = new Set(database.votedDevices);
+                }
+            } else {
+                // Initialize with default data if nothing exists
+                database = {
+                    cargos: ['PREFEITO'],
+                    candidates: [
+                        { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
+                        { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
+                    ],
+                    votes: [],
+                    votedDevices: new Set()
+                };
+                saveDatabase();
+            }
         }
 
         function checkIfVoted() {
@@ -757,6 +769,9 @@
 
         // Update admin statistics
         function updateAdminStats() {
+            // Always load fresh data before updating stats
+            loadDatabase();
+            
             document.getElementById('totalVotes').textContent = database.votes.length;
             document.getElementById('totalCandidates').textContent = database.candidates.length;
             document.getElementById('totalCargos').textContent = database.cargos.length;
@@ -766,6 +781,13 @@
                 updateResults();
             }
         }
+
+        // Auto-refresh data every 2 seconds when admin panel is open
+        setInterval(() => {
+            if (!document.getElementById('adminPanel').classList.contains('hidden')) {
+                updateAdminStats();
+            }
+        }, 2000);
 
         // Message system
         function showMessage(text, type) {
@@ -799,5 +821,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9701392c358c64c9',t:'MTc1NTM1MDM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'970142a4e710e016',t:'MTc1NTM1MDc1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
