@@ -105,7 +105,7 @@
                     <div class="digital-display rounded p-4 mb-4 min-h-96">
                         <div id="displayContent" class="text-center">
                             <h2 class="text-xl mb-4">SEU VOTO PARA</h2>
-                            <h1 id="cargoAtual" class="text-2xl font-bold mb-6">PRESIDENTE</h1>
+                            <h1 id="cargoAtual" class="text-2xl font-bold mb-6">PREFEITO</h1>
                             
                             <div class="grid grid-cols-2 gap-6 mb-6">
                                 <div>
@@ -282,10 +282,10 @@
     <script>
         // Database simulation
         let database = {
-            cargos: ['PRESIDENTE'],
+            cargos: ['PREFEITO'],
             candidates: [
-                { id: 1, name: 'João Silva', number: '13', party: 'PT', cargo: 'PRESIDENTE', votes: 0 },
-                { id: 2, name: 'Maria Santos', number: '45', party: 'PSDB', cargo: 'PRESIDENTE', votes: 0 }
+                { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
+                { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
             ],
             votes: [],
             votedDevices: new Set()
@@ -476,7 +476,7 @@
         function updateDisplay() {
             if (currentState.hasVoted) return;
             
-            const cargo = database.cargos[currentState.cargoIndex] || 'PRESIDENTE';
+            const cargo = database.cargos[currentState.cargoIndex] || 'PREFEITO';
             document.getElementById('cargoAtual').textContent = cargo;
             
             let displayNumber = currentState.numeroDigitado;
@@ -758,5 +758,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9700dae3d7b6644e',t:'MTc1NTM0NjUwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9701031637bccaf6',t:'MTc1NTM0ODE1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
