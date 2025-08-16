@@ -282,6 +282,7 @@
     <script>
         // Database simulation
         let database = {
+            JSON.parse(localStorage.getItem("database")) 
             cargos: ['PREFEITO'],
             candidates: [
                 { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
