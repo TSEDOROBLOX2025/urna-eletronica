@@ -283,13 +283,19 @@
         // Database simulation with localStorage
         let database = JSON.parse(localStorage.getItem("database")) || {
             cargos: ['PREFEITO'],
-            candidates: [
-                { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
-                { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
-            ],
+            candidates: [],
             votes: [],
             votedDevices: []
         };
+
+        // Add default candidates for second round if none exist
+        if (database.candidates.length === 0) {
+            database.candidates = [
+                { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
+                { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
+            ];
+            saveDatabase();
+        }
 
         // Convert votedDevices array back to Set if loading from localStorage
         if (Array.isArray(database.votedDevices)) {
@@ -316,38 +322,10 @@
         // Admin credentials
         const adminCredentials = { user: 'admin', pass: 'urna2024' };
 
-        // Audio simulation
+        // Audio simulation - simplified to avoid blocking
         function playSound(type) {
-            try {
-                // Create audio context for button sounds
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                switch(type) {
-                    case 'beep':
-                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                        break;
-                    case 'confirm':
-                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                        break;
-                    case 'error':
-                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-                        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-                        break;
-                }
-                
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.1);
-            } catch (e) {
-                // Audio not supported or blocked, continue silently
-                console.log('Audio not available');
-            }
+            // Simple beep without audio context to avoid blocking
+            console.log(`Sound: ${type}`);
         }
 
         // Device fingerprinting for vote control
@@ -367,8 +345,14 @@
             currentState.hasVoted = database.votedDevices.has(deviceId);
             
             if (currentState.hasVoted) {
-                document.getElementById('instructions').innerHTML = '⚠️ Este dispositivo já votou nesta eleição';
-                document.getElementById('instructions').className = 'text-sm text-red-400 mt-4';
+                document.getElementById('displayContent').innerHTML = `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <h2 class="text-2xl mb-4 text-red-400">DISPOSITIVO JÁ VOTOU</h2>
+                        <p class="text-lg text-yellow-400">Este dispositivo já participou desta eleição</p>
+                        <p class="text-sm mt-4 text-gray-400">Para votar novamente, aguarde o administrador reiniciar a eleição</p>
+                    </div>
+                `;
             }
         }
 
@@ -377,12 +361,6 @@
             if (currentState.hasVoted) {
                 showMessage('Este dispositivo já votou!', 'error');
                 return;
-            }
-            
-            try {
-                playSound('beep');
-            } catch (e) {
-                // Audio may not work in some browsers, continue without sound
             }
             
             if (currentState.numeroDigitado.length < 2) {
@@ -421,7 +399,6 @@
         function corrigirVoto() {
             if (currentState.hasVoted) return;
             
-            playSound('beep');
             currentState.numeroDigitado = '';
             currentState.candidateFound = null;
             updateDisplay();
@@ -433,7 +410,6 @@
                 return;
             }
             
-            playSound('beep');
             currentState.numeroDigitado = '';
             currentState.candidateFound = { name: 'VOTO EM BRANCO', party: '', number: 'BRANCO' };
             document.getElementById('numeroDigitado').textContent = 'BRANCO';
@@ -454,8 +430,6 @@
                 showMessage('Digite um número ou vote em branco!', 'error');
                 return;
             }
-            
-            playSound('confirm');
             
             // Register vote
             const deviceId = getDeviceId();
@@ -740,13 +714,44 @@
         function resetElection() {
             if (confirm('Tem certeza que deseja reiniciar a eleição? Todos os votos serão perdidos!')) {
                 database.votes = [];
-                database.votedDevices.clear();
+                database.votedDevices = new Set();
                 database.candidates.forEach(c => c.votes = 0);
                 saveDatabase();
                 currentState.hasVoted = false;
+                
+                // Reset display to initial state
+                document.getElementById('displayContent').innerHTML = `
+                    <h2 class="text-xl mb-4">SEU VOTO PARA</h2>
+                    <h1 id="cargoAtual" class="text-2xl font-bold mb-6">PREFEITO</h1>
+                    
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <div class="text-lg mb-2">Número:</div>
+                            <div id="numeroDigitado" class="text-4xl font-bold border-2 border-green-500 p-4 rounded bg-black min-h-16 flex items-center justify-center">
+                                _ _
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-lg mb-2">Foto:</div>
+                            <div id="fotoCandidate" class="candidate-photo w-32 h-32 mx-auto rounded flex items-center justify-center text-gray-500">
+                                SEM FOTO
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-left">
+                        <div class="mb-2">Nome: <span id="nomeCandidate" class="font-bold">-</span></div>
+                        <div class="mb-4">Partido: <span id="partidoCandidate" class="font-bold">-</span></div>
+                    </div>
+                    
+                    <div id="instructions" class="text-sm text-yellow-400 mt-4">
+                        Digite o número do seu candidato
+                    </div>
+                `;
+                
                 updateDisplay();
                 updateAdminStats();
-                showMessage('Eleição reiniciada!', 'success');
+                showMessage('Eleição reiniciada! Todos os dispositivos podem votar novamente.', 'success');
             }
         }
 
@@ -794,5 +799,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97011f6295e0647b',t:'MTc1NTM0OTMxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9701392c358c64c9',t:'MTc1NTM1MDM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
