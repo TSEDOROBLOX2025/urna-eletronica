@@ -280,17 +280,30 @@
     <div id="messageContainer" class="fixed top-4 right-4 z-50"></div>
 
     <script>
-        // Database simulation
-        let database = {
-            JSON.parse(localStorage.getItem("database")) 
+        // Database simulation with localStorage
+        let database = JSON.parse(localStorage.getItem("database")) || {
             cargos: ['PREFEITO'],
             candidates: [
                 { id: 1, name: 'Edgar Monteiro', number: '10', party: 'RPL', cargo: 'PREFEITO', votes: 0 },
                 { id: 2, name: 'Pedro Santos', number: '55', party: 'PSD', cargo: 'PREFEITO', votes: 0 }
             ],
             votes: [],
-            votedDevices: new Set()
+            votedDevices: []
         };
+
+        // Convert votedDevices array back to Set if loading from localStorage
+        if (Array.isArray(database.votedDevices)) {
+            database.votedDevices = new Set(database.votedDevices);
+        }
+
+        // Save database to localStorage
+        function saveDatabase() {
+            const dbToSave = {
+                ...database,
+                votedDevices: Array.from(database.votedDevices)
+            };
+            localStorage.setItem("database", JSON.stringify(dbToSave));
+        }
 
         // Current voting state
         let currentState = {
@@ -305,31 +318,36 @@
 
         // Audio simulation
         function playSound(type) {
-            // Create audio context for button sounds
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            switch(type) {
-                case 'beep':
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    break;
-                case 'confirm':
-                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    break;
-                case 'error':
-                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-                    break;
+            try {
+                // Create audio context for button sounds
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'beep':
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        break;
+                    case 'confirm':
+                        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        break;
+                    case 'error':
+                        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                        break;
+                }
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Audio not supported or blocked, continue silently
+                console.log('Audio not available');
             }
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.1);
         }
 
         // Device fingerprinting for vote control
@@ -361,7 +379,11 @@
                 return;
             }
             
-            playSound('beep');
+            try {
+                playSound('beep');
+            } catch (e) {
+                // Audio may not work in some browsers, continue without sound
+            }
             
             if (currentState.numeroDigitado.length < 2) {
                 currentState.numeroDigitado += num;
@@ -453,6 +475,9 @@
                 const candidate = database.candidates.find(c => c.id === currentState.candidateFound.id);
                 if (candidate) candidate.votes++;
             }
+            
+            // Save to localStorage
+            saveDatabase();
             
             currentState.hasVoted = true;
             
@@ -550,6 +575,7 @@
             if (cargo && !database.cargos.includes(cargo)) {
                 database.cargos.push(cargo);
                 document.getElementById('newCargo').value = '';
+                saveDatabase();
                 updateCargosList();
                 updateCandidateCargoSelect();
                 updateAdminStats();
@@ -560,6 +586,7 @@
         function removeCargo(cargo) {
             database.cargos = database.cargos.filter(c => c !== cargo);
             database.candidates = database.candidates.filter(c => c.cargo !== cargo);
+            saveDatabase();
             updateCargosList();
             updateCandidateCargoSelect();
             updateAdminStats();
@@ -613,6 +640,7 @@
                 };
                 
                 database.candidates.push(candidate);
+                saveDatabase();
                 
                 // Clear form
                 document.getElementById('candidateName').value = '';
@@ -630,6 +658,7 @@
 
         function removeCandidate(id) {
             database.candidates = database.candidates.filter(c => c.id !== id);
+            saveDatabase();
             updateCandidatesList();
             updateAdminStats();
             showMessage('Candidato removido!', 'success');
@@ -713,6 +742,7 @@
                 database.votes = [];
                 database.votedDevices.clear();
                 database.candidates.forEach(c => c.votes = 0);
+                saveDatabase();
                 currentState.hasVoted = false;
                 updateDisplay();
                 updateAdminStats();
@@ -725,6 +755,11 @@
             document.getElementById('totalVotes').textContent = database.votes.length;
             document.getElementById('totalCandidates').textContent = database.candidates.length;
             document.getElementById('totalCargos').textContent = database.cargos.length;
+            
+            // Update results if panel is open
+            if (!document.getElementById('resultsPanel').classList.contains('hidden')) {
+                updateResults();
+            }
         }
 
         // Message system
@@ -759,5 +794,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9701031637bccaf6',t:'MTc1NTM0ODE1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97011f6295e0647b',t:'MTc1NTM0OTMxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
