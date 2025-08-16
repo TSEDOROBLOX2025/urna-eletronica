@@ -1,52 +1,762 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urna Eletrônica - Brookasil</title>
-    <link rel="stylesheet" href="style.css"> <!-- Link para o CSS -->
+    <title>Urna Eletrônica - Sistema de Votação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .urna-screen {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 3px solid #333;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .urna-button {
+            background: linear-gradient(145deg, #e6e6e6, #cccccc);
+            border: 2px solid #999;
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.3), inset 1px 1px 2px rgba(255,255,255,0.8);
+            transition: all 0.1s ease;
+        }
+        
+        .urna-button:active {
+            transform: translateY(2px);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3), inset 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        
+        .urna-button.confirma {
+            background: linear-gradient(145deg, #4ade80, #22c55e);
+            border-color: #16a34a;
+        }
+        
+        .urna-button.corrige {
+            background: linear-gradient(145deg, #fb923c, #f97316);
+            border-color: #ea580c;
+        }
+        
+        .urna-button.branco {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            border-color: #d1d5db;
+        }
+        
+        .digital-display {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .candidate-photo {
+            border: 3px solid #333;
+            background: #f0f0f0;
+        }
+        
+        .admin-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-green {
+            animation: pulseGreen 1s infinite;
+        }
+        
+        @keyframes pulseGreen {
+            0%, 100% { box-shadow: 0 0 5px #22c55e; }
+            50% { box-shadow: 0 0 20px #22c55e, 0 0 30px #22c55e; }
+        }
+    </style>
 </head>
-<body>
-
-    <header>
-        <h1>Urna Eletrônica - Brookasil</h1>
-    </header>
-    
-    <main>
-        <section id="cargoEscolha">
-            <h2>Escolha o número do candidato</h2>
-
-            <!-- Botões para os números dos candidatos -->
-            <div class="botao-container">
-                <button class="numero-btn" onclick="escolherNumero(1)">1</button>
-                <button class="numero-btn" onclick="escolherNumero(2)">2</button>
-                <button class="numero-btn" onclick="escolherNumero(3)">3</button>
-                <button class="numero-btn" onclick="escolherNumero(4)">4</button>
-                <button class="numero-btn" onclick="escolherNumero(5)">5</button>
-                <button class="numero-btn" onclick="escolherNumero(6)">6</button>
-                <button class="numero-btn" onclick="escolherNumero(7)">7</button>
-                <button class="numero-btn" onclick="escolherNumero(8)">8</button>
-                <button class="numero-btn" onclick="escolherNumero(9)">9</button>
-                <button class="numero-btn" onclick="escolherNumero(0)">0</button>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-900 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🗳️ Urna Eletrônica</h1>
+            <div class="space-x-4">
+                <button onclick="showVotingScreen()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded transition-colors">
+                    Votar
+                </button>
+                <button onclick="showAdminLogin()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition-colors">
+                    Administração
+                </button>
             </div>
-        </section>
+        </div>
+    </nav>
 
-        <!-- Tela para confirmar voto após escolher um número -->
-        <section id="telaConfirmacao" style="display: none;">
-            <h2 id="cargoNome"></h2>
-            <p>Você escolheu o número <span id="numeroEscolhido"></span></p>
-            <button onclick="confirmarVoto()">Confirmar Voto</button>
-        </section>
+    <!-- Voting Screen -->
+    <div id="votingScreen" class="container mx-auto p-4 max-w-6xl">
+        <div class="bg-gray-800 rounded-lg p-8 shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Digital Display -->
+                <div class="urna-screen rounded-lg p-6">
+                    <div class="digital-display rounded p-4 mb-4 min-h-96">
+                        <div id="displayContent" class="text-center">
+                            <h2 class="text-xl mb-4">SEU VOTO PARA</h2>
+                            <h1 id="cargoAtual" class="text-2xl font-bold mb-6">PRESIDENTE</h1>
+                            
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <div class="text-lg mb-2">Número:</div>
+                                    <div id="numeroDigitado" class="text-4xl font-bold border-2 border-green-500 p-4 rounded bg-black min-h-16 flex items-center justify-center">
+                                        _ _
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-lg mb-2">Foto:</div>
+                                    <div id="fotoCandidate" class="candidate-photo w-32 h-32 mx-auto rounded flex items-center justify-center text-gray-500">
+                                        SEM FOTO
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-left">
+                                <div class="mb-2">Nome: <span id="nomeCandidate" class="font-bold">-</span></div>
+                                <div class="mb-4">Partido: <span id="partidoCandidate" class="font-bold">-</span></div>
+                            </div>
+                            
+                            <div id="instructions" class="text-sm text-yellow-400 mt-4">
+                                Digite o número do seu candidato
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="message"></div> <!-- Mensagem após o voto -->
-    </main>
+                <!-- Keypad -->
+                <div class="space-y-6">
+                    <div class="grid grid-cols-3 gap-4">
+                        <button onclick="digitarNumero('1')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">1</button>
+                        <button onclick="digitarNumero('2')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">2</button>
+                        <button onclick="digitarNumero('3')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">3</button>
+                        <button onclick="digitarNumero('4')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">4</button>
+                        <button onclick="digitarNumero('5')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">5</button>
+                        <button onclick="digitarNumero('6')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">6</button>
+                        <button onclick="digitarNumero('7')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">7</button>
+                        <button onclick="digitarNumero('8')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">8</button>
+                        <button onclick="digitarNumero('9')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">9</button>
+                        <div></div>
+                        <button onclick="digitarNumero('0')" class="urna-button rounded-lg h-16 text-2xl font-bold text-gray-800">0</button>
+                        <div></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mt-8">
+                        <button onclick="votarBranco()" class="urna-button branco rounded-lg h-16 text-lg font-bold text-gray-800">
+                            BRANCO
+                        </button>
+                        <button onclick="corrigirVoto()" class="urna-button corrige rounded-lg h-16 text-lg font-bold text-white">
+                            CORRIGE
+                        </button>
+                        <button onclick="confirmarVoto()" class="urna-button confirma rounded-lg h-16 text-lg font-bold text-white">
+                            CONFIRMA
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <footer>
-        <p>&copy; 2025 - Brookasil Eleições</p>
-    </footer>
+    <!-- Admin Login -->
+    <div id="adminLogin" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login Administrativo</h2>
+            <div class="space-y-4">
+                <input type="text" id="adminUser" placeholder="Usuário" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <input type="password" id="adminPass" placeholder="Senha" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button onclick="loginAdmin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors">
+                    Entrar
+                </button>
+                <button onclick="hideAdminLogin()" class="w-full bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
-    <script src="script.js"></script> <!-- Link para o JS -->
-</body>
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <div class="admin-panel min-h-screen">
+            <div class="container mx-auto p-6">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-white">Painel Administrativo</h1>
+                    <button onclick="logoutAdmin()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors">
+                        Sair
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <button onclick="showCargosManager()" class="bg-white rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
+                        <div class="text-4xl mb-2">🏛️</div>
+                        <h3 class="text-xl font-bold text-gray-800">Gerenciar Cargos</h3>
+                    </button>
+                    <button onclick="showCandidatesManager()" class="bg-white rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
+                        <div class="text-4xl mb-2">👥</div>
+                        <h3 class="text-xl font-bold text-gray-800">Gerenciar Candidatos</h3>
+                    </button>
+                    <button onclick="showResults()" class="bg-white rounded-lg p-6 text-center hover:shadow-lg transition-shadow">
+                        <div class="text-4xl mb-2">📊</div>
+                        <h3 class="text-xl font-bold text-gray-800">Ver Resultados</h3>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Controles da Eleição</h2>
+                        <button onclick="resetElection()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded transition-colors">
+                            🔄 Reiniciar Eleição
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div class="bg-blue-100 p-4 rounded">
+                            <div class="text-2xl font-bold text-blue-600" id="totalVotes">0</div>
+                            <div class="text-gray-600">Total de Votos</div>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded">
+                            <div class="text-2xl font-bold text-green-600" id="totalCandidates">0</div>
+                            <div class="text-gray-600">Candidatos</div>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded">
+                            <div class="text-2xl font-bold text-purple-600" id="totalCargos">1</div>
+                            <div class="text-gray-600">Cargos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Managers (Hidden by default) -->
+    <div id="cargosManager" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Gerenciar Cargos</h2>
+            <div class="mb-4">
+                <input type="text" id="newCargo" placeholder="Nome do cargo" class="w-full p-3 border rounded-lg mb-2">
+                <button onclick="addCargo()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2">Adicionar</button>
+                <button onclick="hideCargosManager()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Fechar</button>
+            </div>
+            <div id="cargosList" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <div id="candidatesManager" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Gerenciar Candidatos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input type="text" id="candidateName" placeholder="Nome do candidato" class="p-3 border rounded-lg">
+                <input type="text" id="candidateNumber" placeholder="Número" class="p-3 border rounded-lg">
+                <input type="text" id="candidateParty" placeholder="Partido" class="p-3 border rounded-lg">
+                <select id="candidateCargo" class="p-3 border rounded-lg">
+                    <option value="">Selecione o cargo</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <button onclick="addCandidate()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2">Adicionar Candidato</button>
+                <button onclick="hideCandidatesManager()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Fechar</button>
+            </div>
+            <div id="candidatesList" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <div id="resultsPanel" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Resultados da Eleição</h2>
+            <button onclick="hideResults()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded mb-4">Fechar</button>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+        // Database simulation
+        let database = {
+            cargos: ['PRESIDENTE'],
+            candidates: [
+                { id: 1, name: 'João Silva', number: '13', party: 'PT', cargo: 'PRESIDENTE', votes: 0 },
+                { id: 2, name: 'Maria Santos', number: '45', party: 'PSDB', cargo: 'PRESIDENTE', votes: 0 }
+            ],
+            votes: [],
+            votedDevices: new Set()
+        };
+
+        // Current voting state
+        let currentState = {
+            cargoIndex: 0,
+            numeroDigitado: '',
+            candidateFound: null,
+            hasVoted: false
+        };
+
+        // Admin credentials
+        const adminCredentials = { user: 'admin', pass: 'urna2024' };
+
+        // Audio simulation
+        function playSound(type) {
+            // Create audio context for button sounds
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'beep':
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    break;
+                case 'confirm':
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    break;
+                case 'error':
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    break;
+            }
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Device fingerprinting for vote control
+        function getDeviceId() {
+            return navigator.userAgent + screen.width + screen.height + navigator.language;
+        }
+
+        // Initialize the system
+        function init() {
+            checkIfVoted();
+            updateDisplay();
+            updateAdminStats();
+        }
+
+        function checkIfVoted() {
+            const deviceId = getDeviceId();
+            currentState.hasVoted = database.votedDevices.has(deviceId);
+            
+            if (currentState.hasVoted) {
+                document.getElementById('instructions').innerHTML = '⚠️ Este dispositivo já votou nesta eleição';
+                document.getElementById('instructions').className = 'text-sm text-red-400 mt-4';
+            }
+        }
+
+        // Voting functions
+        function digitarNumero(num) {
+            if (currentState.hasVoted) {
+                showMessage('Este dispositivo já votou!', 'error');
+                return;
+            }
+            
+            playSound('beep');
+            
+            if (currentState.numeroDigitado.length < 2) {
+                currentState.numeroDigitado += num;
+                updateDisplay();
+                
+                if (currentState.numeroDigitado.length === 2) {
+                    searchCandidate();
+                }
+            }
+        }
+
+        function searchCandidate() {
+            const cargo = database.cargos[currentState.cargoIndex];
+            const candidate = database.candidates.find(c => 
+                c.number === currentState.numeroDigitado && c.cargo === cargo
+            );
+            
+            if (candidate) {
+                currentState.candidateFound = candidate;
+                document.getElementById('nomeCandidate').textContent = candidate.name;
+                document.getElementById('partidoCandidate').textContent = candidate.party;
+                document.getElementById('fotoCandidate').innerHTML = `<div class="w-full h-full bg-blue-200 rounded flex items-center justify-center text-blue-800 font-bold">${candidate.name.split(' ').map(n => n[0]).join('')}</div>`;
+                document.getElementById('instructions').innerHTML = 'Confira seu voto e aperte CONFIRMA';
+                document.getElementById('instructions').className = 'text-sm text-green-400 mt-4';
+            } else {
+                currentState.candidateFound = null;
+                document.getElementById('nomeCandidate').textContent = 'VOTO NULO';
+                document.getElementById('partidoCandidate').textContent = '-';
+                document.getElementById('fotoCandidate').innerHTML = 'SEM FOTO';
+                document.getElementById('instructions').innerHTML = 'VOTO NULO - Confira e aperte CONFIRMA';
+                document.getElementById('instructions').className = 'text-sm text-yellow-400 mt-4';
+            }
+        }
+
+        function corrigirVoto() {
+            if (currentState.hasVoted) return;
+            
+            playSound('beep');
+            currentState.numeroDigitado = '';
+            currentState.candidateFound = null;
+            updateDisplay();
+        }
+
+        function votarBranco() {
+            if (currentState.hasVoted) {
+                showMessage('Este dispositivo já votou!', 'error');
+                return;
+            }
+            
+            playSound('beep');
+            currentState.numeroDigitado = '';
+            currentState.candidateFound = { name: 'VOTO EM BRANCO', party: '', number: 'BRANCO' };
+            document.getElementById('numeroDigitado').textContent = 'BRANCO';
+            document.getElementById('nomeCandidate').textContent = 'VOTO EM BRANCO';
+            document.getElementById('partidoCandidate').textContent = '';
+            document.getElementById('fotoCandidate').innerHTML = 'SEM FOTO';
+            document.getElementById('instructions').innerHTML = 'VOTO EM BRANCO - Aperte CONFIRMA';
+            document.getElementById('instructions').className = 'text-sm text-white mt-4';
+        }
+
+        function confirmarVoto() {
+            if (currentState.hasVoted) {
+                showMessage('Este dispositivo já votou!', 'error');
+                return;
+            }
+            
+            if (currentState.numeroDigitado === '' && !currentState.candidateFound) {
+                showMessage('Digite um número ou vote em branco!', 'error');
+                return;
+            }
+            
+            playSound('confirm');
+            
+            // Register vote
+            const deviceId = getDeviceId();
+            const vote = {
+                cargo: database.cargos[currentState.cargoIndex],
+                candidate: currentState.candidateFound,
+                number: currentState.numeroDigitado || 'BRANCO',
+                timestamp: new Date(),
+                deviceId: deviceId
+            };
+            
+            database.votes.push(vote);
+            database.votedDevices.add(deviceId);
+            
+            // Update candidate votes
+            if (currentState.candidateFound && currentState.candidateFound.id) {
+                const candidate = database.candidates.find(c => c.id === currentState.candidateFound.id);
+                if (candidate) candidate.votes++;
+            }
+            
+            currentState.hasVoted = true;
+            
+            // Show success message
+            document.getElementById('displayContent').innerHTML = `
+                <div class="text-center">
+                    <div class="text-6xl mb-4">✅</div>
+                    <h2 class="text-2xl mb-4">VOTO CONFIRMADO</h2>
+                    <p class="text-lg">Obrigado por participar!</p>
+                    <p class="text-sm mt-4 text-yellow-400">Este dispositivo não pode votar novamente</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                currentState.numeroDigitado = '';
+                currentState.candidateFound = null;
+                updateDisplay();
+                updateAdminStats();
+            }, 3000);
+        }
+
+        function updateDisplay() {
+            if (currentState.hasVoted) return;
+            
+            const cargo = database.cargos[currentState.cargoIndex] || 'PRESIDENTE';
+            document.getElementById('cargoAtual').textContent = cargo;
+            
+            let displayNumber = currentState.numeroDigitado;
+            if (displayNumber.length === 0) displayNumber = '_ _';
+            else if (displayNumber.length === 1) displayNumber = displayNumber + ' _';
+            
+            document.getElementById('numeroDigitado').textContent = displayNumber;
+            
+            if (!currentState.candidateFound) {
+                document.getElementById('nomeCandidate').textContent = '-';
+                document.getElementById('partidoCandidate').textContent = '-';
+                document.getElementById('fotoCandidate').innerHTML = 'SEM FOTO';
+                document.getElementById('instructions').innerHTML = 'Digite o número do seu candidato';
+                document.getElementById('instructions').className = 'text-sm text-yellow-400 mt-4';
+            }
+        }
+
+        // Admin functions
+        function showAdminLogin() {
+            document.getElementById('adminLogin').classList.remove('hidden');
+        }
+
+        function hideAdminLogin() {
+            document.getElementById('adminLogin').classList.add('hidden');
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+        }
+
+        function loginAdmin() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            
+            if (user === adminCredentials.user && pass === adminCredentials.pass) {
+                hideAdminLogin();
+                showAdminPanel();
+                updateAdminStats();
+            } else {
+                showMessage('Credenciais inválidas!', 'error');
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('votingScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            updateCandidateCargoSelect();
+        }
+
+        function logoutAdmin() {
+            document.getElementById('adminPanel').classList.add('hidden');
+            showVotingScreen();
+        }
+
+        function showVotingScreen() {
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('votingScreen').classList.remove('hidden');
+        }
+
+        // Cargo management
+        function showCargosManager() {
+            document.getElementById('cargosManager').classList.remove('hidden');
+            updateCargosList();
+        }
+
+        function hideCargosManager() {
+            document.getElementById('cargosManager').classList.add('hidden');
+        }
+
+        function addCargo() {
+            const cargo = document.getElementById('newCargo').value.trim().toUpperCase();
+            if (cargo && !database.cargos.includes(cargo)) {
+                database.cargos.push(cargo);
+                document.getElementById('newCargo').value = '';
+                updateCargosList();
+                updateCandidateCargoSelect();
+                updateAdminStats();
+                showMessage('Cargo adicionado com sucesso!', 'success');
+            }
+        }
+
+        function removeCargo(cargo) {
+            database.cargos = database.cargos.filter(c => c !== cargo);
+            database.candidates = database.candidates.filter(c => c.cargo !== cargo);
+            updateCargosList();
+            updateCandidateCargoSelect();
+            updateAdminStats();
+            showMessage('Cargo removido!', 'success');
+        }
+
+        function updateCargosList() {
+            const list = document.getElementById('cargosList');
+            list.innerHTML = database.cargos.map(cargo => `
+                <div class="flex justify-between items-center p-3 bg-gray-100 rounded">
+                    <span class="font-medium">${cargo}</span>
+                    <button onclick="removeCargo('${cargo}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                        Remover
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Candidate management
+        function showCandidatesManager() {
+            document.getElementById('candidatesManager').classList.remove('hidden');
+            updateCandidatesList();
+            updateCandidateCargoSelect();
+        }
+
+        function hideCandidatesManager() {
+            document.getElementById('candidatesManager').classList.add('hidden');
+        }
+
+        function addCandidate() {
+            const name = document.getElementById('candidateName').value.trim();
+            const number = document.getElementById('candidateNumber').value.trim();
+            const party = document.getElementById('candidateParty').value.trim();
+            const cargo = document.getElementById('candidateCargo').value;
+            
+            if (name && number && party && cargo) {
+                // Check if number already exists for this cargo
+                const exists = database.candidates.find(c => c.number === number && c.cargo === cargo);
+                if (exists) {
+                    showMessage('Número já existe para este cargo!', 'error');
+                    return;
+                }
+                
+                const candidate = {
+                    id: Date.now(),
+                    name: name,
+                    number: number,
+                    party: party,
+                    cargo: cargo,
+                    votes: 0
+                };
+                
+                database.candidates.push(candidate);
+                
+                // Clear form
+                document.getElementById('candidateName').value = '';
+                document.getElementById('candidateNumber').value = '';
+                document.getElementById('candidateParty').value = '';
+                document.getElementById('candidateCargo').value = '';
+                
+                updateCandidatesList();
+                updateAdminStats();
+                showMessage('Candidato adicionado com sucesso!', 'success');
+            } else {
+                showMessage('Preencha todos os campos!', 'error');
+            }
+        }
+
+        function removeCandidate(id) {
+            database.candidates = database.candidates.filter(c => c.id !== id);
+            updateCandidatesList();
+            updateAdminStats();
+            showMessage('Candidato removido!', 'success');
+        }
+
+        function updateCandidatesList() {
+            const list = document.getElementById('candidatesList');
+            list.innerHTML = database.candidates.map(candidate => `
+                <div class="flex justify-between items-center p-3 bg-gray-100 rounded">
+                    <div>
+                        <span class="font-medium">${candidate.name}</span>
+                        <span class="text-gray-600 ml-2">(${candidate.number} - ${candidate.party} - ${candidate.cargo})</span>
+                        <span class="text-blue-600 ml-2">${candidate.votes} votos</span>
+                    </div>
+                    <button onclick="removeCandidate(${candidate.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                        Remover
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateCandidateCargoSelect() {
+            const select = document.getElementById('candidateCargo');
+            select.innerHTML = '<option value="">Selecione o cargo</option>' + 
+                database.cargos.map(cargo => `<option value="${cargo}">${cargo}</option>`).join('');
+        }
+
+        // Results
+        function showResults() {
+            document.getElementById('resultsPanel').classList.remove('hidden');
+            updateResults();
+        }
+
+        function hideResults() {
+            document.getElementById('resultsPanel').classList.add('hidden');
+        }
+
+        function updateResults() {
+            const totalVotes = database.votes.length;
+            const content = document.getElementById('resultsContent');
+            
+            let html = '<div class="space-y-6">';
+            
+            database.cargos.forEach(cargo => {
+                const candidatesCargo = database.candidates.filter(c => c.cargo === cargo);
+                const votesCargo = database.votes.filter(v => v.cargo === cargo).length;
+                
+                html += `<div class="border rounded-lg p-4">
+                    <h3 class="text-xl font-bold mb-4">${cargo}</h3>
+                    <div class="space-y-2">`;
+                
+                candidatesCargo.forEach(candidate => {
+                    const percentage = votesCargo > 0 ? ((candidate.votes / votesCargo) * 100).toFixed(1) : 0;
+                    html += `
+                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                            <span>${candidate.name} (${candidate.number})</span>
+                            <span class="font-bold">${candidate.votes} votos (${percentage}%)</span>
+                        </div>`;
+                });
+                
+                const brancosNulos = votesCargo - candidatesCargo.reduce((sum, c) => sum + c.votes, 0);
+                if (brancosNulos > 0) {
+                    const percentage = ((brancosNulos / votesCargo) * 100).toFixed(1);
+                    html += `
+                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                            <span>Brancos/Nulos</span>
+                            <span class="font-bold">${brancosNulos} votos (${percentage}%)</span>
+                        </div>`;
+                }
+                
+                html += `</div></div>`;
+            });
+            
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        // Reset election
+        function resetElection() {
+            if (confirm('Tem certeza que deseja reiniciar a eleição? Todos os votos serão perdidos!')) {
+                database.votes = [];
+                database.votedDevices.clear();
+                database.candidates.forEach(c => c.votes = 0);
+                currentState.hasVoted = false;
+                updateDisplay();
+                updateAdminStats();
+                showMessage('Eleição reiniciada!', 'success');
+            }
+        }
+
+        // Update admin statistics
+        function updateAdminStats() {
+            document.getElementById('totalVotes').textContent = database.votes.length;
+            document.getElementById('totalCandidates').textContent = database.candidates.length;
+            document.getElementById('totalCargos').textContent = database.cargos.length;
+        }
+
+        // Message system
+        function showMessage(text, type) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.className = `p-4 rounded-lg mb-2 text-white fade-in ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            message.textContent = text;
+            
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('votingScreen').classList.contains('hidden')) return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                digitarNumero(e.key);
+            } else if (e.key === 'Enter') {
+                confirmarVoto();
+            } else if (e.key === 'Backspace') {
+                corrigirVoto();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9700dae3d7b6644e',t:'MTc1NTM0NjUwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
